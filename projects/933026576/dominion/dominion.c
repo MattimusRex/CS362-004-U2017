@@ -283,7 +283,7 @@ int buyCard(int supplyPos, struct gameState *state) {
     if (DEBUG)
       printf("You do not have any buys left\n");
     return -1;
-  } else if (supplyCount(supplyPos, state) <1){
+  } else if (supplyCount(supplyPos, state) < 1){
     if (DEBUG)
       printf("There are not any of that type of card left\n");
     return -1;
