@@ -1,0 +1,300 @@
+//Unit Test suite for great_hall card
+//great hall grants +1 action and +1 card when played as an action card
+
+
+#include "dominion.h"
+#include "dominion_helpers.h"
+#include <stdio.h>
+#include "rngs.h"
+#include <stdlib.h>
+#include <assert.h>
+
+//set hand to known cards
+void setHand(struct gameState* state, int player) {
+    int i;
+    state->handCount[player] = 5;
+    for (i = 0; i < state->handCount[player] - 1; i++) {
+        state->hand[player][i] = estate;
+    }
+    state->hand[player][state->handCount[player] - 1] = great_hall;
+    return;
+}
+
+//should draw 1 card and increase numAction by 1 (from 1 to 2).
+//discard should increase by 1 from discarding the played card, but discard currently broken
+void testGhallNormal(struct gameState* state, int player, int handPos) {
+    printf("testGhallNormal test\n");
+    int preHandCount = state->handCount[player];
+    int preNumBuys = state->numBuys;
+    int preNumActions = state->numActions;
+    int preCoins = state->coins;
+    int preDeckCount = state->deckCount[player];
+    int preDiscardCount = state->discardCount[player];
+
+    cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+
+    int postHandCount = state->handCount[player];
+    int postNumBuys = state->numBuys;
+    int postNumActions = state->numActions;
+    int postCoins = state->coins;
+    int postDeckCount = state->deckCount[player];
+    int postDiscardCount = state->discardCount[player];
+    int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
+
+    //see if great hall still in hand. it should not be
+    int i;
+    int ghallFound = 0;
+    for (i = 0; i < state->handCount[player]; i++) {
+        if (state->hand[player][i] == great_hall) {
+            ghallFound = 1;
+        }
+    }
+
+    
+    //draws 1 cards but discards itself for hand size increase of 0
+    if (preHandCount == postHandCount)
+        printf("handCount: PASSED\n");
+    else
+        printf("handCount: FAILED\n");
+    
+    if (preNumBuys == postNumBuys)
+        printf("numBuys: PASSED\n");
+    else
+        printf("numBuys: FAILED\n");
+
+    //increased number of actions by 1
+    if (preNumActions + 1 == postNumActions)
+        printf("numActions: PASSED\n");
+    else
+        printf("numActions: FAILED\n");
+
+    if (preCoins == postCoins)
+        printf("coins: PASSED\n");
+    else
+        printf("coins: FAILED\n");
+
+    //deck should be 1 smaller from drawing 1 card
+    if (preDeckCount - 1 == postDeckCount)
+        printf("deckCount: PASSED\n");
+    else
+        printf("deckCount: FAILED\n");
+
+    if (preDiscardCount + 1 == postDiscardCount)
+        printf("discardCount: PASSED\n");
+    else
+        printf("discardCount: FAILED\n");
+
+    if (topDiscardCard == village)
+        printf("topDiscardCard: PASSED\n");
+    else
+        printf("topDiscardCard: FAILED\n"); 
+
+    if (ghallFound == 0)
+        printf("NotInHand: PASSED\n");
+    else if (ghallFound == 1)
+        printf("NotInHand: FAILED\n");     
+    
+    printf("\n");
+    return;
+}
+
+//should draw 1 card and increase numAction by 1 (from 1 to 2).
+//discardCount should go from 2 to 1 (shuffle discard into deck and then add ghall to discard)
+void testGhallNoDeck(struct gameState* state, int player, int handPos) {
+    printf("testGhallNoDeck test\n");
+    int preHandCount = state->handCount[player];
+    int preNumBuys = state->numBuys;
+    int preNumActions = state->numActions;
+    int preCoins = state->coins;
+
+    cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+
+    int postHandCount = state->handCount[player];
+    int postNumBuys = state->numBuys;
+    int postNumActions = state->numActions;
+    int postCoins = state->coins;
+    int postDeckCount = state->deckCount[player];
+    int postDiscardCount = state->discardCount[player];
+    int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
+
+    //see if ghall still in hand. it should not be
+    //smithy should be in hand after draw, but not before
+    int i;
+    int ghallFound = 0;
+    int smithyFound = 0;
+    for (i = 0; i < state->handCount[player]; i++) {
+        if (state->hand[player][i] == great_hall) {
+            ghallFound = 1;
+        }
+        if (state->hand[player][i] == smithy) {
+            smithyFound = 1;
+        }
+    }
+
+    
+    //draws 1 cards but discards itself for hand size increase of 0
+    if (preHandCount == postHandCount)
+        printf("handCount: PASSED\n");
+    else
+        printf("handCount: FAILED\n");
+    
+    if (preNumBuys == postNumBuys)
+        printf("numBuys: PASSED\n");
+    else
+        printf("numBuys: FAILED\n");
+
+    //increased number of actions by 1
+    if (preNumActions + 1 == postNumActions)
+        printf("numActions: PASSED\n");
+    else
+        printf("numActions: FAILED\n");
+
+    if (preCoins == postCoins)
+        printf("coins: PASSED\n");
+    else
+        printf("coins: FAILED\n");
+
+    //deck should be 1 because it was empty and discard(2) shuffled into deck, then 1 card drawn
+    if (1 == postDeckCount)
+        printf("deckCount: PASSED\n");
+    else
+        printf("deckCount: FAILED\n");
+
+    //should be 1 from discard being emptied then ghall added
+    if (1 == postDiscardCount)
+        printf("discardCount: PASSED\n");
+    else
+        printf("discardCount: FAILED\n");
+
+    if (topDiscardCard == village)
+        printf("topDiscardCard: PASSED\n");
+    else
+        printf("topDiscardCard: FAILED\n"); 
+
+    if (ghallFound == 0)
+        printf("NotInHand: PASSED\n");
+    else if (ghallFound == 1)
+        printf("NotInHand: FAILED\n");
+
+    if (smithyFound == 1)
+        printf("smithyDrawn: PASSED\n");
+    else if (smithyFound == 0)
+        printf("smithyDrawn: FAILED\n");       
+    
+    printf("\n");
+    return;
+}
+
+//should draw 0 cards (none available) and increase numAction by 1 (from 1 to 2).
+//discardCount should go from 0 to 1 (ghall)
+void testGhallNoDeckDiscard(struct gameState* state, int player, int handPos) {
+    printf("testGhallNoDeckDiscard test\n");
+    int preHandCount = state->handCount[player];
+    int preNumBuys = state->numBuys;
+    int preNumActions = state->numActions;
+    int preCoins = state->coins;
+
+    cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+
+    int postHandCount = state->handCount[player];
+    int postNumBuys = state->numBuys;
+    int postNumActions = state->numActions;
+    int postCoins = state->coins;
+    int postDeckCount = state->deckCount[player];
+    int postDiscardCount = state->discardCount[player];
+    int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
+
+    //see if ghall still in hand. it should not be
+    int i;
+    int ghallFound = 0;
+    for (i = 0; i < state->handCount[player]; i++) {
+        if (state->hand[player][i] == great_hall) {
+            ghallFound = 1;
+        }
+    }
+
+    
+    //draws 0 cards but discards itself for hand size increase of -1
+    if (preHandCount - 1 == postHandCount)
+        printf("handCount: PASSED\n");
+    else
+        printf("handCount: FAILED\n");
+    
+    if (preNumBuys == postNumBuys)
+        printf("numBuys: PASSED\n");
+    else
+        printf("numBuys: FAILED\n");
+
+    //increased number of actions by 1
+    if (preNumActions + 1 == postNumActions)
+        printf("numActions: PASSED\n");
+    else
+        printf("numActions: FAILED\n");
+
+    if (preCoins == postCoins)
+        printf("coins: PASSED\n");
+    else
+        printf("coins: FAILED\n");
+
+    //deck should be 0 because it was empty
+    if (0 == postDeckCount)
+        printf("deckCount: PASSED\n");
+    else
+        printf("deckCount: FAILED\n");
+
+    //should be 1 from discard being empty then village added
+    if (1 == postDiscardCount)
+        printf("discardCount: PASSED\n");
+    else
+        printf("discardCount: FAILED\n");
+
+    if (topDiscardCard == village)
+        printf("topDiscardCard: PASSED\n");
+    else
+        printf("topDiscardCard: FAILED\n"); 
+
+    if (ghallFound == 0)
+        printf("NotInHand: PASSED\n");
+    else if (ghallFound == 1)
+        printf("NotInHand: FAILED\n");     
+    
+    printf("\n");
+    return;
+}
+
+int main(int argc, char** argv) {
+    struct gameState state;
+    int numberOfPlayers = 2;
+    int k[10] = {adventurer, gardens, embargo, village, minion, mine, cutpurse,
+        sea_hag, tribute, smithy};
+    initializeGame(numberOfPlayers, k, 1, &state);
+    int player = state.whoseTurn;
+
+    //prep for first test.  5 card hand and 5 card deck.  1 action
+    state.numActions = 1;
+    setHand(&state, player);
+    //state, player, handPos
+    testGhallNormal(&state, player, state.handCount[player] - 1);
+
+    //second test - no cards in deck, but cards in discard pile
+    initializeGame(numberOfPlayers, k, 1, &state);
+    player = state.whoseTurn;
+    state.numActions = 1;
+    setHand(&state, player);
+    state.deckCount[player] = 0;
+    state.discardCount[player] = 2;
+    state.discard[player][0] = copper;
+    state.discard[player][1] = smithy;
+    testGhallNoDeck(&state, player, state.handCount[player] - 1);
+
+    //third test - no cards in deck or discard pile.  
+    initializeGame(numberOfPlayers, k, 1, &state);
+    player = state.whoseTurn;
+    state.numActions = 1;
+    setHand(&state, player);
+    state.deckCount[player] = 0;
+    state.discardCount[player] = 0;
+    testGhallNoDeckDiscard(&state, player, state.handCount[player] - 1);   
+
+    return 0;
+}
