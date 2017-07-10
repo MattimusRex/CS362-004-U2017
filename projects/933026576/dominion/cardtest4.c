@@ -20,23 +20,80 @@ void setHand(struct gameState* state, int player) {
     return;
 }
 
+int checkState(struct gameState* pre, struct gameState* post) {
+    if (pre->numPlayers != post->numPlayers)
+        return -1;
+    int i;
+    for (i = 0; i < treasure_map + 1; i++) {
+        if (pre->supplyCount[i] != post->supplyCount[i])
+            return -2;
+    }
+    if (memcmp(pre->embargoTokens, post->embargoTokens, sizeof(pre->embargoTokens)) != 0){
+        return -3;
+    }
+    if (pre->outpostPlayed != post->outpostPlayed)
+        return -4;
+    if (pre->outpostTurn != post->outpostTurn)
+        return -5;
+    if (pre->whoseTurn != post->whoseTurn)
+        return -6;
+    if (pre->phase != post->phase)
+        return -7;
+    // if (pre->numActions != post->numActions)
+    //     return -8;
+    for (i = 0; i < pre->numPlayers; i++) {
+        if (i != pre->whoseTurn && memcmp(pre->hand[i], post->hand[i], sizeof(pre->hand[i])) != 0)
+            return -10;
+        if (i != pre->whoseTurn && pre->handCount[i] != post->handCount[i])
+            return -9;
+        if (i != pre->whoseTurn && memcmp(pre->deck[i], post->deck[i], sizeof(pre->deck[i])) != 0)
+            return -11;
+        if (i != pre->whoseTurn && pre->deckCount[i] != post->deckCount[i])
+            return -12;
+    }
+    // if (memcmp(pre->handCount, post->handCount, sizeof(pre->handCount)) != 0)
+    //     return -9;
+    // if (memcmp(pre->hand, post->hand, sizeof(pre->hand)) != 0)
+    //     return -10 ;
+    // if (memcmp(pre->deck, post->deck, sizeof(pre->deck)) != 0)
+    //     return -11;
+    // if (memcmp(pre->deckCount, post->deckCount, sizeof(pre->deckCount)) != 0)
+    //     return -12;
+    if (pre->playedCardCount != post->playedCardCount - 1) {
+        return -15;
+    }
+    for (i = 0; i < pre->numPlayers; i++) {
+        if (i != pre->whoseTurn && memcmp(pre->discard[i], post->discard[i], sizeof(pre->discard[i])) != 0)
+            return -16;
+        if (i != pre->whoseTurn && pre->discardCount[i] != post->discardCount[i])
+            return -17;
+    }
+    if (pre->numBuys != post->numBuys)
+        return -18;
+    if (pre->coins != post->coins)
+        return -19;
+    return 0;               
+}
+
+
 //should draw 1 card and increase numAction by 1 (from 1 to 2).
 //discard should increase by 1 from discarding the played card, but discard currently broken
 void testGhallNormal(struct gameState* state, int player, int handPos) {
     printf("testGhallNormal test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
     int preNumActions = state->numActions;
-    int preCoins = state->coins;
     int preDeckCount = state->deckCount[player];
     int preDiscardCount = state->discardCount[player];
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
     int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -57,21 +114,11 @@ void testGhallNormal(struct gameState* state, int player, int handPos) {
     else
         printf("handCount: FAILED\n");
     
-    if (preNumBuys == postNumBuys)
-        printf("numBuys: PASSED\n");
-    else
-        printf("numBuys: FAILED\n");
-
     //increased number of actions by 1
     if (preNumActions + 1 == postNumActions)
         printf("numActions: PASSED\n");
     else
         printf("numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("coins: PASSED\n");
-    else
-        printf("coins: FAILED\n");
 
     //deck should be 1 smaller from drawing 1 card
     if (preDeckCount - 1 == postDeckCount)
@@ -103,16 +150,17 @@ void testGhallNormal(struct gameState* state, int player, int handPos) {
 void testGhallNoDeck(struct gameState* state, int player, int handPos) {
     printf("testGhallNoDeck test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
     int preNumActions = state->numActions;
-    int preCoins = state->coins;
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
     int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -137,22 +185,12 @@ void testGhallNoDeck(struct gameState* state, int player, int handPos) {
         printf("handCount: PASSED\n");
     else
         printf("handCount: FAILED\n");
-    
-    if (preNumBuys == postNumBuys)
-        printf("numBuys: PASSED\n");
-    else
-        printf("numBuys: FAILED\n");
 
     //increased number of actions by 1
     if (preNumActions + 1 == postNumActions)
         printf("numActions: PASSED\n");
     else
         printf("numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("coins: PASSED\n");
-    else
-        printf("coins: FAILED\n");
 
     //deck should be 1 because it was empty and discard(2) shuffled into deck, then 1 card drawn
     if (1 == postDeckCount)
@@ -190,16 +228,17 @@ void testGhallNoDeck(struct gameState* state, int player, int handPos) {
 void testGhallNoDeckDiscard(struct gameState* state, int player, int handPos) {
     printf("testGhallNoDeckDiscard test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
     int preNumActions = state->numActions;
-    int preCoins = state->coins;
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(great_hall, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
     int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -219,22 +258,12 @@ void testGhallNoDeckDiscard(struct gameState* state, int player, int handPos) {
         printf("handCount: PASSED\n");
     else
         printf("handCount: FAILED\n");
-    
-    if (preNumBuys == postNumBuys)
-        printf("numBuys: PASSED\n");
-    else
-        printf("numBuys: FAILED\n");
 
     //increased number of actions by 1
     if (preNumActions + 1 == postNumActions)
         printf("numActions: PASSED\n");
     else
         printf("numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("coins: PASSED\n");
-    else
-        printf("coins: FAILED\n");
 
     //deck should be 0 because it was empty
     if (0 == postDeckCount)

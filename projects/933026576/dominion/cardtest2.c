@@ -10,6 +10,7 @@
 #include "rngs.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 //set hand to known cards
 void setHand(struct gameState* state, int player) {
@@ -22,23 +23,76 @@ void setHand(struct gameState* state, int player) {
     return;
 }
 
+int checkState(struct gameState* pre, struct gameState* post) {
+    if (pre->numPlayers != post->numPlayers)
+        return -1;
+    int i;
+    for (i = 0; i < treasure_map + 1; i++) {
+        if (pre->supplyCount[i] != post->supplyCount[i])
+            return -2;
+    }
+    if (memcmp(pre->embargoTokens, post->embargoTokens, sizeof(pre->embargoTokens)) != 0){
+        return -3;
+    }
+    if (pre->outpostPlayed != post->outpostPlayed)
+        return -4;
+    if (pre->outpostTurn != post->outpostTurn)
+        return -5;
+    if (pre->whoseTurn != post->whoseTurn)
+        return -6;
+    if (pre->phase != post->phase)
+        return -7;
+    if (pre->numActions != post->numActions)
+        return -8;
+    for (i = 0; i < pre->numPlayers; i++) {
+        if (i != pre->whoseTurn && memcmp(pre->hand[i], post->hand[i], sizeof(pre->hand[i])) != 0)
+            return -10;
+        if (i != pre->whoseTurn && pre->handCount[i] != post->handCount[i])
+            return -9;
+        if (i != pre->whoseTurn && memcmp(pre->deck[i], post->deck[i], sizeof(pre->deck[i])) != 0)
+            return -11;
+        if (i != pre->whoseTurn && pre->deckCount[i] != post->deckCount[i])
+            return -12;
+    }
+    // if (memcmp(pre->handCount, post->handCount, sizeof(pre->handCount)) != 0)
+    //     return -9;
+    // if (memcmp(pre->hand, post->hand, sizeof(pre->hand)) != 0)
+    //     return -10 ;
+    // if (memcmp(pre->deck, post->deck, sizeof(pre->deck)) != 0)
+    //     return -11;
+    // if (memcmp(pre->deckCount, post->deckCount, sizeof(pre->deckCount)) != 0)
+    //     return -12; 
+    if (pre->playedCardCount != post->playedCardCount - 1)
+        return -15;
+    for (i = 0; i < pre->numPlayers; i++) {
+        if (i != pre->whoseTurn && memcmp(pre->discard[i], post->discard[i], sizeof(pre->discard[i])) != 0)
+            return -16;
+        if (i != pre->whoseTurn && pre->discardCount[i] != post->discardCount[i])
+            return -17;
+    }
+    if (pre->numBuys != post->numBuys)
+        return -18;
+    if (pre->coins != post->coins)
+        return -19;
+    return 0;               
+}
+
 //should draw 2 cards, both copper.  deck should have 3 cards left in it. hand should increase by 2.
 //discard should increase by 1 from discarding the played card, but discard currently broken
 void advDeckAllCopper(struct gameState* state, int player, int handPos) {
     printf("advDeckAllCopper test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
-    int preNumActions = state->numActions;
-    int preCoins = state->coins;
     int preDeckCount = state->deckCount[player];
     int preDiscardCount = state->discardCount[player];
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(adventurer, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
-    int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -60,21 +114,6 @@ void advDeckAllCopper(struct gameState* state, int player, int handPos) {
         printf("adv handCount: FAILED\n");
         printf("preHandCount: %d, postHandCount: %d\n", preHandCount, postHandCount);
     }
-    
-    if (preNumBuys == postNumBuys)
-        printf("adv numBuys: PASSED\n");
-    else
-        printf("adv numBuys: FAILED\n");
-
-    if (preNumActions == postNumActions)
-        printf("adv numActions: PASSED\n");
-    else
-        printf("adv numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("adv coins: PASSED\n");
-    else
-        printf("adv coins: FAILED\n");
 
     //should be reduced by 2 for this test
     if (preDeckCount - 2 == postDeckCount)
@@ -106,16 +145,15 @@ void advDeckAllCopper(struct gameState* state, int player, int handPos) {
 void advDeck2TreasureAtBottom(struct gameState* state, int player, int handPos) {
     printf("advDeck2TreasureAtBottom test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
-    int preNumActions = state->numActions;
-    int preCoins = state->coins;
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(adventurer, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
-    int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -136,22 +174,6 @@ void advDeck2TreasureAtBottom(struct gameState* state, int player, int handPos) 
     else
         printf("adv handCount: FAILED\n");
         printf("preHandCount: %d, postHandCount: %d\n", preHandCount, postHandCount);
-    
-    if (preNumBuys == postNumBuys)
-        printf("adv numBuys: PASSED\n");
-    else
-        printf("adv numBuys: FAILED\n");
-
-    if (preNumActions == postNumActions)
-        printf("adv numActions: PASSED\n");
-    else
-        printf("adv numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("adv coins: PASSED\n");
-    else
-        printf("adv coins: FAILED\n");
-
     //should be empty for this test
     if (0 == postDeckCount)
         printf("adv deckCount: PASSED\n");
@@ -183,16 +205,15 @@ void advDeck2TreasureAtBottom(struct gameState* state, int player, int handPos) 
 void advDeckAndDiscard(struct gameState* state, int player, int handPos) {
     printf("advDeckAndDiscard test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
-    int preNumActions = state->numActions;
-    int preCoins = state->coins;
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(adventurer, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
-    int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -213,21 +234,6 @@ void advDeckAndDiscard(struct gameState* state, int player, int handPos) {
     else
         printf("adv handCount: FAILED\n");
         printf("preHandCount: %d, postHandCount: %d\n", preHandCount, postHandCount);
-    
-    if (preNumBuys == postNumBuys)
-        printf("adv numBuys: PASSED\n");
-    else
-        printf("adv numBuys: FAILED\n");
-
-    if (preNumActions == postNumActions)
-        printf("adv numActions: PASSED\n");
-    else
-        printf("adv numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("adv coins: PASSED\n");
-    else
-        printf("adv coins: FAILED\n");
 
     //should be empty for this test
     if (0 == postDeckCount)
@@ -260,16 +266,15 @@ void advDeckAndDiscard(struct gameState* state, int player, int handPos) {
 void advDeckNotEnoughTreasure(struct gameState* state, int player, int handPos) {
     printf("advDeckNotEnoughTreasure test\n");
     int preHandCount = state->handCount[player];
-    int preNumBuys = state->numBuys;
-    int preNumActions = state->numActions;
-    int preCoins = state->coins;
 
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
     cardEffect(adventurer, -1, -1, -1, state, handPos, 0);
+    if (checkState(&pre, state) != 0) {
+        printf("Altered incorrect state field: %d\n", checkState(&pre, state));
+    }
 
     int postHandCount = state->handCount[player];
-    int postNumBuys = state->numBuys;
-    int postNumActions = state->numActions;
-    int postCoins = state->coins;
     int postDeckCount = state->deckCount[player];
     int postDiscardCount = state->discardCount[player];
     int topDiscardCard = state->discard[player][state->discardCount[player] - 1];
@@ -290,21 +295,6 @@ void advDeckNotEnoughTreasure(struct gameState* state, int player, int handPos) 
     else
         printf("adv handCount: FAILED\n");
         printf("preHandCount: %d, postHandCount: %d\n", preHandCount, postHandCount);
-    
-    if (preNumBuys == postNumBuys)
-        printf("adv numBuys: PASSED\n");
-    else
-        printf("adv numBuys: FAILED\n");
-
-    if (preNumActions == postNumActions)
-        printf("adv numActions: PASSED\n");
-    else
-        printf("adv numActions: FAILED\n");
-
-    if (preCoins == postCoins)
-        printf("adv coins: PASSED\n");
-    else
-        printf("adv coins: FAILED\n");
 
     //should be empty for this test
     if (0 == postDeckCount)

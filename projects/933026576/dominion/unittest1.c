@@ -9,8 +9,10 @@
 //@param player: the correct player index
 //@param state: current gameState 
 void whoseTurnTest(struct gameState* state, int player) {
-    printf("whoseTurnTest: ");
-    if (whoseTurn(state) == player) {
+    struct gameState preState;
+    memcpy(&preState, state, sizeof(struct gameState));
+    printf("whoseTurnTest: player %d ", player);
+    if (whoseTurn(state) == player && memcmp(&preState, state, sizeof(struct gameState)) == 0) {
         printf("PASSED\n");
     }
     else {
@@ -23,16 +25,19 @@ void whoseTurnTest(struct gameState* state, int player) {
 int main (int argc, char** argv) {
     //initialize game for testing with 4 people
     struct gameState state;
-    int numberOfPlayers = 4;
     int k[10] = {adventurer, gardens, embargo, village, minion, mine, cutpurse,
         sea_hag, tribute, smithy};
-    initializeGame(numberOfPlayers, k, 1, &state);
     
-    //tests that whoseTurn correctly returns player
-    int i;  
-    for (i = 0; i < numberOfPlayers + 1; i++) {
-        whoseTurnTest(&state, i);
-        state.whoseTurn++;
-    }
+    //tests that whoseTurn correctly returns player and doesnt adjust state
+    int i;
+    int j;
+    for (i = 2; i < 5; i++) {
+        initializeGame(i, k, 1, &state);
+        state.whoseTurn = 0;
+        for (j = 0; j < i; j++) {
+            whoseTurnTest(&state, j);
+            state.whoseTurn++;
+        }
+    }  
     return 0;
 }

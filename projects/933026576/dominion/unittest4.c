@@ -5,56 +5,35 @@
 #include <stdio.h>
 #include "rngs.h"
 #include <stdlib.h>
-
-//tests all hand sizes
-void numHandCardsAllSizes(struct gameState* state, int player) {
-    int i;
-    int failed = 0;
-    for (i = 0; i < MAX_HAND; i++) {
-        state->handCount[player] = i;
-        int numCards = numHandCards(state);
-        if (numCards != i) {
-            failed = 1;
-            break;
-        }
-    }
-    if (failed == 0)
-        printf("numHandCardsAllSizes: PASSED\n");
-    else if (failed == 1)
-        printf("numHandCardsAllSizes: FAILED\n");
-    
-    printf("\n");
-    return;
-}
-
-void numHandCards2Players(struct gameState* state) {
-    state->handCount[0] = 4;
-    state->handCount[1] = 2;
-    int numCards = numHandCards(state);
-    if (4 == numCards && state->handCount[1] == 2)
-        printf("numHandCard2Players: PASSED\n");
-    else
-        printf("numHandCard2Players: FAILED\n");
-    
-    printf("\n");
-    return;    
-}
-
+#include <string.h>
 
 int main(int argc, char** argv) {
-    struct gameState state;
-    int numberOfPlayers = 4;
-    int k[10] = {adventurer, gardens, embargo, village, minion, mine, cutpurse,
+    int l[10] = {adventurer, gardens, embargo, village, minion, mine, cutpurse,
         sea_hag, tribute, smithy};
-    initializeGame(numberOfPlayers, k, 1, &state);
 
-    int player = state.whoseTurn;
-`
-    //check that numHandCards correctly reports hand size for all possible hand sizes
-    numHandCardsAllSizes(&state, player);
+    int i;
+    int j;
+    int k;
+    struct gameState pre;
+    struct gameState post;
 
-    //check that changing a different players hand size doesnt affect current player
-    numHandCards2Players(&state);
+    //test all handsizes of all players of all player amounts and make sure nothing else changes    
+    for (i = 2; i < 5; i++) {
+        initializeGame(i, l, 1, &pre);
+        for (j = 0; j < i; j++) {
+            pre.whoseTurn = j;
+            for (k = 0; k < MAX_HAND; k++) {
+                pre.handCount[j] = k;
+                memcpy(&post, &pre, sizeof(struct gameState));
+                int numCards = numHandCards(&pre);
+                if (numCards != k || memcmp(&pre, &post, sizeof(struct gameState)) != 0) {
+                    printf("numHandCards: FAILED\n");
+                    return -1;
+                }
+            }
+        }
+    }
+    printf("numHandCards: PASSED\n");
 
     return 0;
 }

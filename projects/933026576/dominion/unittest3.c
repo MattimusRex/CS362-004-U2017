@@ -4,117 +4,134 @@
 #include "dominion_helpers.h"
 #include <stdio.h>
 #include "rngs.h"
+#include <string.h>
 #include <stdlib.h>
 
 //tests 5 copper
 void updateCoinsAllCopper(int player, struct gameState* state, int coins) {
     state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsAllCopper: PASSED\n");
+    }
     else {
         printf("updateCoinsAllCopper: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests 500 gold
 void updateCoinsMaxHandGold(int player, struct gameState* state, int coins) {
     state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsMaxHandGold: PASSED\n");
+    }
     else {
         printf("updateCoinsMaxHandGold: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests 2 gold, 2 silver, 2 copper
 void updateCoins2OfEach(int player, struct gameState* state, int coins) {
-    state->coins = 0;    
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoins2OfEach: PASSED\n");
+    }
     else {
         printf("updateCoins2OfEach: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests hand size of 0
 void updateCoinsEmptyHand(int player, struct gameState* state, int coins) {
-    state->coins = 0;    
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsEmptyHand: PASSED\n");
+    }
     else {
         printf("updateCoinsEmptyHand: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests 1 copper, 1 silver, 3 villages
 void updateCoinsNormalHand(int player, struct gameState* state, int coins) {
-    state->coins = 0;    
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsNormalHand: PASSED\n");
+    }
     else {
         printf("updateCoinsNormalHand: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests same as above but with a bonus of 5
 void updateCoinsNormalHandBonus(int player, struct gameState* state, int coins, int bonus) {
-    state->coins = 0;   
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, bonus);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsNormalHandBonus: PASSED\n");
+    }
     else {
         printf("updateCoinsNormalHandBonus: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests hand size of 0 but with a bonus of 5
 void updateCoinsEmptyHandBonus(int player, struct gameState* state, int coins, int bonus) {
-    state->coins = 0;    
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, bonus);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsEmptyHandBonus: PASSED\n");
+    }
     else {
         printf("updateCoinsEmptyHandBonus: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
 //tests 5 card hand with no treasure cards
 void updateCoinsNoTreasure(int player, struct gameState* state, int coins) {
-    state->coins = 0;    
+    state->coins = 0;
+    struct gameState pre;
+    memcpy(&pre, state, sizeof(struct gameState));
+    pre.coins = coins;
     updateCoins(player, state, 0);
-    int postCoins = state->coins;
-    if (coins == postCoins)
+    if (memcmp(&pre, state, sizeof(struct gameState)) == 0) {
         printf("updateCoinsNoTreasure: PASSED\n");
+    }
     else {
         printf("updateCoinsNoTreasure: FAILED\n");
     }
-    printf("\n");
     return;
 }
 
