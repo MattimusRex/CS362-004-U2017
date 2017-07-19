@@ -14,7 +14,7 @@
 /* http://dominion.isotropic.org has other stuff */
 
 /* hand# means index of a card in current active player's hand */
-
+//27 cards
 enum CARD
   {curse = 0,
    estate,
