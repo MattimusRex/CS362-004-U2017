@@ -5,7 +5,7 @@
 
 char inputChar()
 {
-    return (char)(rand() % 256);
+    return (rand() % 94) + 32;
 }
 
 char *inputString()
