@@ -5,20 +5,17 @@
 
 char inputChar()
 {
-    char arr[9] = {'[', '(', '{', ' ', 'a', 'x', '}', ')', ']'};
-    int index = rand() % 9;
-    return arr[index];
+    return (char)(rand() % 256);
 }
 
 char *inputString()
 {
     char* str = malloc(sizeof(char) * 6);
-    char arr[5] = {'r', 'e', 's', 't', '\0'};
     int i;
-    for (i = 0; i < 6; i++) {
-      int index = rand() % 5;
-      str[i] = arr[index];
+    for (i = 0; i < 5; i++) {
+      str[i] = (rand() % 26) + 97;
     }
+    str[5] = '\0';
     return str;
 }
 
@@ -53,6 +50,7 @@ void testme()
       free(s);
       exit(200);
     }
+    free(s);
   }
 }
 
