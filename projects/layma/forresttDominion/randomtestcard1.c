@@ -1,5 +1,5 @@
-//random tester for the adventurer card
-//Adventurer draws cards until 2 treasure cards are drawn or it runs out of drawable cards
+//random tester for the smithy card
+//smithy draws cards 3 cards if there are  >= 3 cards in the deck + discard.  otherwise it draws as many as it can before deck+discard runs out
 
 #include "dominion.h"
 #include "dominion_helpers.h"
@@ -10,53 +10,32 @@
 #include <string.h>
 #include <time.h>
 
-int checkAdventurer(int p, struct gameState* post, int handPos) {
+
+int checkSmithy(int p, struct gameState* post, int handPos) {
     //copy state
     struct gameState pre;
     memcpy(&pre, post, sizeof(struct gameState));
 
-    //play adventurer
-    cardEffect(adventurer, -1, -1, -1, post, handPos, 0);
+    //play smithy
+    cardEffect(smithy, -1, -1, -1, post, handPos, 0);
 
-    //basically play adventurer manually
-    //move cards from deck/discard until 2 treasure cards found.
-    int treasureCount = 0;
-    int tempStack[MAX_DECK * 2];
-    int tempCount = 0;
-    while (treasureCount < 2) {
-        int card;
-        //draw from deck if available, discard if no deck, break out of drawing if neither available.
+    //basically play smithy manually
+    //draw 3 cards
+    int i;
+    int card;
+    for (i = 0; i < 3; i++) {
         if (pre.deckCount[p] > 0) {
             card = pre.deck[p][--pre.deckCount[p]];
-        }
+            pre.hand[p][pre.handCount[p]++] = card;                     
+        }    
         else if (pre.discardCount[p] > 0) {
             card = pre.discard[p][--pre.discardCount[p]];
-        }
-        else {
-            break;
-        }
-
-        if (card == copper || card == silver || card == gold) {
-            treasureCount++;
-            pre.hand[p][pre.handCount[p]++] = card;
-        }
-        else {
-            tempStack[tempCount++] = card;
-        }
-    }
-    //get rid of the non treasure cards that were drawn
-    int i;
-    while (tempCount - 1 >= 0) {
-        pre.discard[p][pre.discardCount[p]++] = tempStack[tempCount-- - 1];
+            pre.hand[p][pre.handCount[p]++] = card;                        
+        }     
     }
 
-    //discard adventurer - use built in even though its messed up because thats whats used in dominion.c  
+    //discard smithy - use their discard function because their's is broken and if you dont use their's you cant accurately test smithy effects
     discardCard(handPos, p, &pre, 0);
-    // pre.discard[p][pre.discardCount[p]++] = pre.hand[p][handPos];
-    // for (i = handPos; i < pre.handCount[p] - 1; i++){
-    //     pre.hand[p][i] = pre.hand[p][i + 1];
-    // }
-    // pre.handCount[p]--;
 
     // if (pre.discardCount[p] == post->discardCount[p]) {
     //     printf("discardCount PASSED\n");
@@ -80,19 +59,19 @@ int checkAdventurer(int p, struct gameState* post, int handPos) {
     //     printf("handCount PASSED\n");
     //     for (i = 0; i < pre.handCount[p]; i++) {
     //         if (pre.hand[p][i] != post->hand[p][i]) {
-    //             printf("hand count: %d    hands mismatched on card %d\n", pre.handCount[p], i);
-    //             return -1;
+    //             printf("card %d: pre: %d  post: %d\n", i, pre.hand[p][i], post->hand[p][i]);
     //         }
     //     }
     // }
 
     //compare pre and post
-    return (memcmp(&pre, post, sizeof(struct gameState)));
-
-
+    int result = memcmp(&pre, post, sizeof(struct gameState));
+    if (result != 0) {
+        printf("Correct hand count: %d\n", pre.handCount[p]);
+        printf("Incorrect hand count: %d\n", post->handCount[p]);
+    }
+    return (result);
 } 
-
-
 
 int main(int argc, char** argv) {
     //setup initial videos
@@ -106,7 +85,6 @@ int main(int argc, char** argv) {
     int failed = 0;
     memset(&state, 0, sizeof(struct gameState));
     for (n = 0; n < 20000; n++) {
-        int treasureCount = 0;
         for (i = 0; i < sizeof(struct gameState); i++) {
             ((char*)&state)[i] = rand() % 256;
         }
@@ -118,31 +96,19 @@ int main(int argc, char** argv) {
         state.discardCount[p] = rand() % MAX_DECK;
         for (j = 0; j < state.discardCount[p]; j++) {
             int card = rand() % (treasure_map + 1);
-            if (card == copper || card == silver || card == gold) {
-                treasureCount++;
-            }
             state.discard[p][j] = card;
         }        
         for (j = 0; j < state.deckCount[p]; j++) {
             int card = rand() % (treasure_map + 1);
-            if (card == copper || card == silver || card == gold) {
-                treasureCount++;
-            }
             state.deck[p][j] = card;
         }
-        //card seg faults if there is no treasure.  Set 1 treasure manually if no treasure to avoid seg fault
-        //so that you can get coverage numbers for the assignment pdf.  
-        // if (treasureCount == 0) {
-        //     int index = rand() % state.deckCount[p];
-        //     state.deck[p][index] = copper;
-        // }
-        //account for space to add the 2 drawn treasure cards
-        state.handCount[p] = (rand() % (MAX_HAND - 3)) + 1;
-        state.hand[p][state.handCount[p] - 1] = adventurer;
-        state.playedCardCount = 0;
+        //account for space to add the 3 drawn cards
+        state.handCount[p] = (rand() % (MAX_HAND - 4)) + 1;
+        state.hand[p][state.handCount[p] - 1] = smithy;
+        state.playedCardCount = rand() % MAX_DECK;
 
         //run test
-        int result = checkAdventurer(p, &state, state.handCount[p] - 1);
+        int result = checkSmithy(p, &state, state.handCount[p] - 1);
         if (result != 0) {
             printf("Test Case %d FAILED\n", n);
             failed = 1;
