@@ -1,3 +1,23 @@
+﻿Skip to content
+This repository
+Search
+Pull requests
+Issues
+Marketplace
+Gist
+ @MattimusRex
+ Sign out
+ Watch 0
+  Star 0
+  Fork 106 aaaronMF/CS362-004-U2017
+forked from aburasa/CS362-004-U2017
+ Code  Pull requests 0  Projects 0  Wiki Insights 
+Branch: fifera-finalpr… Find file Copy pathCS362-004-U2017/FinalProject/URLValidatorInCorrect/src/UrlValidatorTest.java
+f63a77f  2 minutes ago
+@aaaronMF aaaronMF updated partition testing
+1 contributor
+RawBlameHistory     
+354 lines (292 sloc)  15.8 KB
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -56,7 +76,7 @@ public class UrlValidatorTest extends TestCase {
 	   assertFalse(urlVal.isValid("http://1.2.3.4."));
 	   assertTrue(urlVal.isValid("http://0.0.0.0"));
 	   
-	   bug - these two should be invalid, but reporting as valid.  incorrectly reports subgroups > 255 as valid
+	   //bug - these two should be invalid, but reporting as valid.  incorrectly reports subgroups > 255 as valid
 	   assertFalse(urlVal.isValid("http://255.255.255.256"));
 	   assertFalse(urlVal.isValid("http://256.256.256.256"));
 	   
@@ -93,9 +113,33 @@ public class UrlValidatorTest extends TestCase {
        UrlValidator urlVal = new UrlValidator(null, null, UrlValidator.ALLOW_ALL_SCHEMES);
        // Test IP address where each subsection is a negative value
        // isValid() should return false
-       String urlToTest = "http://-1.-1.-1.-1";
-       System.out.println("Result for " + urlToTest + ": " + urlVal.isValid(urlToTest));
-       assertFalse(urlVal.isValid(urlToTest));
+       String urlToTest1 = "http://-1.-1.-1.-1";
+       System.out.println("Result for " + urlToTest1 + ": " + urlVal.isValid(urlToTest1));
+       assertFalse(urlVal.isValid(urlToTest1));
+       
+       // Test address where only the first subsection is changed to a negative value
+       // isValid() should return false
+       String urlToTest2 = "http://-1.10.10.10";
+       System.out.println("Result for " + urlToTest2 + ": " + urlVal.isValid(urlToTest2));
+       assertFalse(urlVal.isValid(urlToTest2));
+       
+       // Test address where only the second subsection is changed to a negative value
+       // isValid() should return false
+       String urlToTest3 = "http://10.-1.10.10";
+       System.out.println("Result for " + urlToTest3 + ": " + urlVal.isValid(urlToTest3));
+       assertFalse(urlVal.isValid(urlToTest3));
+       
+       // Test address where only the third subsection is changed to a negative value
+       // isValid() should return false
+       String urlToTest4 = "http://10.10.-1.10";
+       System.out.println("Result for " + urlToTest4 + ": " + urlVal.isValid(urlToTest4));
+       assertFalse(urlVal.isValid(urlToTest4));
+       
+       // Test address where only the fourth subsection is changed to a negative value
+       // isValid() should return false
+       String urlToTest5 = "http://10.10.10.-1";
+       System.out.println("Result for " + urlToTest5 + ": " + urlVal.isValid(urlToTest5));
+       assertFalse(urlVal.isValid(urlToTest5));
    }
 
    public void testYourSecondPartition(){
@@ -105,6 +149,30 @@ public class UrlValidatorTest extends TestCase {
        String urlToTest = "http://0.0.0.0";
        System.out.println("Result for " + urlToTest + ": " + urlVal.isValid(urlToTest));
        assertTrue(urlVal.isValid(urlToTest));
+       
+       // Test address where only the first subsection is changed to the lower boundary value
+       // isValid() should return true
+       String urlToTest2 = "http://0.10.10.10";
+       System.out.println("Result for " + urlToTest2 + ": " + urlVal.isValid(urlToTest2));
+       assertTrue(urlVal.isValid(urlToTest2));
+       
+       // Test address where only the second subsection is changed to the lower boundary value
+       // isValid() should return true
+       String urlToTest3 = "http://10.0.10.10";
+       System.out.println("Result for " + urlToTest3 + ": " + urlVal.isValid(urlToTest3));
+       assertTrue(urlVal.isValid(urlToTest3));
+       
+       // Test address where only the third subsection is changed to the lower boundary value
+       // isValid() should return true
+       String urlToTest4 = "http://10.10.0.10";
+       System.out.println("Result for " + urlToTest4 + ": " + urlVal.isValid(urlToTest4));
+       assertTrue(urlVal.isValid(urlToTest4));
+       
+       // Test address where only the fourth subsection is changed to the lower boundary value
+       // isValid() should return true
+       String urlToTest5 = "http://10.10.10.0";
+       System.out.println("Result for " + urlToTest5 + ": " + urlVal.isValid(urlToTest5));
+       assertTrue(urlVal.isValid(urlToTest5));
    }
 
    public void testYourThirdPartition(){
@@ -123,6 +191,30 @@ public class UrlValidatorTest extends TestCase {
        String urlToTest = "http://255.255.255.255";
        System.out.println("Result for " + urlToTest + ": " + urlVal.isValid(urlToTest));
        assertTrue(urlVal.isValid(urlToTest));
+       
+       // Test address where only the first subsection is changed to the upper boundary value
+       // isValid() should return true
+       String urlToTest2 = "http://255.10.10.10";
+       System.out.println("Result for " + urlToTest2 + ": " + urlVal.isValid(urlToTest2));
+       assertTrue(urlVal.isValid(urlToTest2));
+       
+       // Test address where only the second subsection is changed to the upper boundary value
+       // isValid() should return true
+       String urlToTest3 = "http://10.255.10.10";
+       System.out.println("Result for " + urlToTest3 + ": " + urlVal.isValid(urlToTest3));
+       assertTrue(urlVal.isValid(urlToTest3));
+       
+       // Test address where only the third subsection is changed to the upper boundary value
+       // isValid() should return true
+       String urlToTest4 = "http://10.10.255.10";
+       System.out.println("Result for " + urlToTest4 + ": " + urlVal.isValid(urlToTest4));
+       assertTrue(urlVal.isValid(urlToTest4));
+       
+       // Test address where only the fourth subsection is changed to the upper boundary value
+       // isValid() should return true
+       String urlToTest5 = "http://10.10.10.255";
+       System.out.println("Result for " + urlToTest5 + ": " + urlVal.isValid(urlToTest5));
+       assertTrue(urlVal.isValid(urlToTest5));
    }
 
    public void testYourFifthPartition(){
@@ -132,6 +224,30 @@ public class UrlValidatorTest extends TestCase {
        String urlToTest = "http://300.300.300.300";
        System.out.println("Result for " + urlToTest + ": " + urlVal.isValid(urlToTest));
        assertFalse(urlVal.isValid(urlToTest));
+       
+       // Test address where only the first subsection is greater than 255
+       // isValid() should return false
+       String urlToTest2 = "http://300.10.10.10";
+       System.out.println("Result for " + urlToTest2 + ": " + urlVal.isValid(urlToTest2));
+       assertFalse(urlVal.isValid(urlToTest2));
+       
+       // Test address where only the second subsection is greater than 255
+       // isValid() should return false
+       String urlToTest3 = "http://10.300.10.10";
+       System.out.println("Result for " + urlToTest3 + ": " + urlVal.isValid(urlToTest3));
+       assertFalse(urlVal.isValid(urlToTest3));
+       
+       // Test address where only the third subsection is greater than 255
+       // isValid() should return false
+       String urlToTest4 = "http://10.10.300.10";
+       System.out.println("Result for " + urlToTest4 + ": " + urlVal.isValid(urlToTest4));
+       assertFalse(urlVal.isValid(urlToTest4));
+       
+       // Test address where only the fourth subsection is greater than 255
+       // isValid() should return false
+       String urlToTest5 = "http://10.10.10.300";
+       System.out.println("Result for " + urlToTest5 + ": " + urlVal.isValid(urlToTest5));
+       assertFalse(urlVal.isValid(urlToTest5));
    }
 
    public void testIsValid()
@@ -256,3 +372,5 @@ public class UrlValidatorTest extends TestCase {
    
 
 }
+Contact GitHub API Training Shop Blog About
+© 2017 GitHub, Inc. Terms Privacy Security Status Help
